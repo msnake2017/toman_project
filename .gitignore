@@ -1,2 +1,9 @@
 .venv/
 .idea/
+__pycache__/
+static/
+media/
+
+.env
+*.pyc
+**.mo
