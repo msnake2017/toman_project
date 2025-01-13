@@ -1,3 +1,4 @@
+import os.path
 from abc import abstractmethod
 
 from django.contrib.auth import get_user_model
@@ -6,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ValidationError
+from django.core.validators import ValidationError
 
 from .utils import get_upload_image_path
 
@@ -38,7 +39,7 @@ class BaseModelWithImage(BaseModel):
     def images(self) -> QuerySet["Image"]:
         return Image.objects.filter(
             content_type=ContentType.objects.get_for_model(self),
-            object=self,
+            object_id=self.pk,
         )
 
 
@@ -64,16 +65,27 @@ class Image(BaseModel):
         model_cls = self.content_type.model_class()
         max_image_count = getattr(model_cls, 'MAX_IMAGE_COUNT')
         if not Image.objects.filter(content_type=self.content_type, object_id=self.object_id).count() < max_image_count:
-            raise ValidationError(_('Image count cannot exceed %s MB.') % max_image_count)
+            raise ValidationError(_('Image count cannot exceed %s') % max_image_count)
 
     def clean(self):
         super().clean()
-        self._validate_image_size_limit()
-        self._validate_image_count_limit()
+        if not self.pk and (
+            hasattr(self, 'content_type') and
+            hasattr(self, 'object_id')
+        ):
+            self._validate_image_size_limit()
+            self._validate_image_count_limit()
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        if not self.pk:
+            self.full_clean()
         super().save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        to_delete = str(self.image.file)
+        super().delete(using, keep_parents)
+        if os.path.exists(to_delete):
+            os.remove(to_delete)
 
 
 # TODO TEST
@@ -92,3 +104,4 @@ class Product(BaseModelWithImage):
         indexes = [
             models.Index(fields=['id', 'user_id']),
         ]
+        ordering = ('-id', )

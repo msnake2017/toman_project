@@ -1,6 +1,9 @@
+from datetime import datetime
+from typing import Optional, List
+
 from django.contrib.auth import get_user_model
 from ninja import Schema
-from pydantic import model_validator
+from pydantic import model_validator, Field
 from typing_extensions import Self
 
 from .authentication import (
@@ -9,6 +12,14 @@ from .authentication import (
     decode_access_token
 )
 from .exceptions import ApiValidationError
+
+
+class NoContent(Schema):
+    pass
+
+
+class ErrorSchema(Schema):
+    detail: str
 
 
 class BaseLoginReqSchema(Schema):
@@ -59,3 +70,24 @@ class RefreshReqSchema(BaseLoginReqSchema):
 class LoginRespSchema(Schema):
     access_token: str
     refresh_token: str
+
+
+class ImageRespSchema(Schema):
+    id: int
+    image: str
+
+
+class BaseProductSchema(Schema):
+    title: str
+    price: int = Field(..., gt=0)
+    description: str
+
+
+class ProductRespSchema(BaseProductSchema):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    images: Optional[List[ImageRespSchema]]
+
+
+class UpdateOrCreateProductReqSchema(BaseProductSchema): ...  # noqa
