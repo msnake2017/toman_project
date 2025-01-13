@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -11,7 +12,7 @@ from .utils import get_upload_image_path
 
 
 class BaseModel(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(_('created_at'), auto_now_add=True)
 
     class Meta:
         abstract = True
@@ -80,7 +81,14 @@ class Product(BaseModelWithImage):
     title = models.CharField(_('title'), max_length=255)
     price = models.PositiveIntegerField(_('price'))
     description = models.TextField(_('description'))
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(_('updated_at'), auto_now=True)
+
+    user = models.ForeignKey(get_user_model(), verbose_name=_('user'), on_delete=models.CASCADE)
 
     MAX_IMAGE_COUNT = 5
     MAX_IMAGE_SIZE_MB = 2
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['id', 'user_id']),
+        ]

@@ -22,6 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'ninja',
+
     'core',
 ]
 
@@ -101,4 +103,13 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
 MEDIA_ROOT = BASE_DIR / 'media'
 
+LOCAL_PATHS = (BASE_DIR / 'locale')
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+########################################################################################################################
+
+JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'change_me')
+JWT_ALGORITHM = "HS256"
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv('JWT_ACCESS_TOKEN_EXPIRE_MINUTES', 30)
+JWT_REFRESH_TOKEN_EXPIRE_DAYS = os.getenv('JWT_REFRESH_TOKEN_EXPIRE_DAYS', 7)
