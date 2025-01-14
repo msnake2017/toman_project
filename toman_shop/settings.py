@@ -63,8 +63,16 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', 'toman_shop'),
         'USER': os.getenv('DB_USER', 'toman_shop'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'toman_shop'),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'HOST': os.getenv('DB_HOST', 'postgres'),
         'PORT': os.getenv('DB_PORT', '5432'),
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": f"redis://{os.getenv('REDIS_HOST', 'redis')}:{os.getenv('REDIS_PORT', '6379')}",
+        "TIMEOUT": int(os.getenv("REDIS_TIMEOUT", 60)),
     }
 }
 
@@ -113,3 +121,6 @@ JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'change_me')
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRE_MINUTES', 30))
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv('JWT_REFRESH_TOKEN_EXPIRE_DAYS', 7))
+
+ANON_RATE_THROTTLE = os.getenv('ANON_RATE_THROTTLE', '50/s')
+AUTH_RATE_THROTTLE = os.getenv('AUTH_RATE_THROTTLE', '100/s')

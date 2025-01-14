@@ -1,6 +1,7 @@
 from typing import List
 
 from django.contrib.contenttypes.models import ContentType
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from ninja import Router, UploadedFile, File
@@ -17,17 +18,18 @@ from core.schemas import (
     LoginReqSchema,
     RefreshReqSchema,
     ProductRespSchema,
-    UpdateOrCreateProductReqSchema,
+    CreateProductReqSchema,
     ImageRespSchema,
-    ErrorSchema, NoContent,
+    ErrorSchema,
+    NoContent,
+    UpdateProductReqSchema,
 )
 
 router = Router()
 
-# TODO CACHING
+PRODUCT_LIST_CACHE_KEY = 'products:user:{user_id}'
 
 
-# TODO TEST
 @router.post(
     "/login/access-token/",
     response={
@@ -39,7 +41,6 @@ def get_access_token(request, body: LoginReqSchema):
     return body.generate_jwt_tokens()
 
 
-# TODO TEST
 @router.post(
     "/login/refresh-token/",
     response={
@@ -51,7 +52,6 @@ def get_access_token_from_refresh_token(request, body: RefreshReqSchema):
     return body.generate_jwt_tokens()
 
 
-# TODO TEST
 @router.get(
     "/products",
     response=List[ProductRespSchema],
@@ -59,10 +59,14 @@ def get_access_token_from_refresh_token(request, body: RefreshReqSchema):
 )
 @paginate(PageNumberPagination)
 def get_products(request):
-    return Product.objects.filter(user=request.user)
+    cache_key = PRODUCT_LIST_CACHE_KEY.format(user_id=request.user.id)
+    if not (products := cache.get(cache_key)):
+        products = Product.objects.filter(user=request.user)
+        cache.set(cache_key, products)
+
+    return products
 
 
-# TODO TEST
 @router.get(
     "/products/{product_id}",
     response={
@@ -75,7 +79,6 @@ def get_product(request, product_id: int):
     return get_object_or_404(Product, id=product_id, user=request.user)
 
 
-# TODO TEST
 @router.delete(
     "/products/{product_id}",
     response={
@@ -89,20 +92,21 @@ def delete_product(request, product_id: int):
     images = product.images
     product.delete()
     images.delete()
+    cache.delete(PRODUCT_LIST_CACHE_KEY.format(user_id=request.user.id))
     return 204, ""
 
 
-# TODO TEST
 @router.post(
     "/products/",
     response={201: ProductRespSchema},
     auth=JWTAuth()
 )
-def create_product(request, payload: UpdateOrCreateProductReqSchema):
-    return Product.objects.create(user=request.user, **payload.dict())
+def create_product(request, payload: CreateProductReqSchema):
+    product = Product.objects.create(user=request.user, **payload.dict())
+    cache.delete(PRODUCT_LIST_CACHE_KEY.format(user_id=request.user.id))
+    return product
 
 
-# TODO TEST
 @router.put(
     "/products/{product_id}/",
     response={
@@ -110,16 +114,16 @@ def create_product(request, payload: UpdateOrCreateProductReqSchema):
     },
     auth=JWTAuth()
 )
-def update_product(request, product_id: int, payload: UpdateOrCreateProductReqSchema):
+def update_product(request, product_id: int, payload: UpdateProductReqSchema):
     product = get_object_or_404(Product, id=product_id, user=request.user)
-    for key, value in payload.dict().items():
+    for key, value in payload.dict(exclude_none=True).items():
         setattr(product, key, value)
 
     product.save()
+    cache.delete(PRODUCT_LIST_CACHE_KEY.format(user_id=request.user.id))
     return product
 
 
-# TODO TEST
 @router.post(
     "/products/{product_id}/images/",
     response={
@@ -147,10 +151,10 @@ def upload_images_for_product(request, product_id: int, images: List[UploadedFil
                 400
             )
 
+    cache.delete(PRODUCT_LIST_CACHE_KEY.format(user_id=request.user.id))
     return 201, response
 
 
-# TODO TEST
 @router.delete(
     "/products/{product_id}/images/{image_id}/",
     response={
@@ -164,4 +168,5 @@ def delete_product_image(request, product_id: int, image_id: int):
     content_type = ContentType.objects.get_for_model(product)
     image = get_object_or_404(Image, id=image_id, object_id=product.pk, content_type=content_type)
     image.delete()
+    cache.delete(PRODUCT_LIST_CACHE_KEY.format(user_id=request.user.id))
     return 204, ""

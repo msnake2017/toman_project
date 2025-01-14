@@ -1,10 +1,7 @@
 import os
 from datetime import datetime
 
-from django.conf import settings
 
-
-# TODO TEST
 def get_upload_image_path(image, filename) -> str:
     now = datetime.now().strftime('%Y%m%d%H%M%S%f')
     _, file_extension = os.path.splitext(filename)

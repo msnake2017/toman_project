@@ -3,6 +3,10 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
+from ninja.throttling import (
+    AnonRateThrottle,
+    AuthRateThrottle
+)
 
 from core.apis.v1 import router as core_v1_router
 from core.exceptions import ApiValidationError
@@ -21,7 +25,12 @@ if settings.DEBUG:
     )
 
 
-api = NinjaAPI()
+api = NinjaAPI(
+    throttle=[
+        AnonRateThrottle(settings.ANON_RATE_THROTTLE),
+        AuthRateThrottle(settings.AUTH_RATE_THROTTLE)
+    ]
+)
 
 
 @api.exception_handler(ApiValidationError)
