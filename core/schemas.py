@@ -35,7 +35,6 @@ class BaseLoginReqSchema(Schema):
         }
 
 
-# TODO TEST
 class LoginReqSchema(BaseLoginReqSchema):
     username: str
     password: str
@@ -54,7 +53,6 @@ class LoginReqSchema(BaseLoginReqSchema):
         return self
 
 
-# TODO TEST
 class RefreshReqSchema(BaseLoginReqSchema):
     refresh_token: str
 

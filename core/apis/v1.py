@@ -107,7 +107,6 @@ def create_product(request, payload: CreateProductReqSchema):
     return product
 
 
-# TODO TEST
 @router.put(
     "/products/{product_id}/",
     response={

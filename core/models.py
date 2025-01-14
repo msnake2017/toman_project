@@ -19,7 +19,6 @@ class BaseModel(models.Model):
         abstract = True
 
 
-# TODO TEST
 class BaseModelWithImage(BaseModel):
 
     class Meta:
@@ -43,7 +42,6 @@ class BaseModelWithImage(BaseModel):
         )
 
 
-# TODO TEST
 class Image(BaseModel):
     image = models.ImageField(verbose_name=_('image'), upload_to=get_upload_image_path)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
@@ -88,7 +86,6 @@ class Image(BaseModel):
             os.remove(to_delete)
 
 
-# TODO TEST
 class Product(BaseModelWithImage):
     title = models.CharField(_('title'), max_length=255)
     price = models.PositiveIntegerField(_('price'), validators=[MinValueValidator(1)])
