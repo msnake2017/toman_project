@@ -8,5 +8,6 @@ pydantic==2.10.5
 pydantic_core==2.27.2
 PyJWT==2.10.1
 python-dotenv==1.0.1
+redis==5.2.1
 sqlparse==0.5.3
 typing_extensions==4.12.2

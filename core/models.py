@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db.models import QuerySet
 from django.utils.translation import gettext_lazy as _
-from django.core.validators import ValidationError
+from django.core.validators import ValidationError, MinValueValidator
 
 from .utils import get_upload_image_path
 
@@ -91,7 +91,7 @@ class Image(BaseModel):
 # TODO TEST
 class Product(BaseModelWithImage):
     title = models.CharField(_('title'), max_length=255)
-    price = models.PositiveIntegerField(_('price'))
+    price = models.PositiveIntegerField(_('price'), validators=[MinValueValidator(1)])
     description = models.TextField(_('description'))
     updated_at = models.DateTimeField(_('updated_at'), auto_now=True)
 

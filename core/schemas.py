@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from django.contrib.auth import get_user_model
 from ninja import Schema
-from pydantic import model_validator, Field
+from pydantic import model_validator, Field, field_validator
 from typing_extensions import Self
 
 from .authentication import (
@@ -90,4 +90,19 @@ class ProductRespSchema(BaseProductSchema):
     images: Optional[List[ImageRespSchema]]
 
 
-class UpdateOrCreateProductReqSchema(BaseProductSchema): ...  # noqa
+class CreateProductReqSchema(BaseProductSchema): ...  # noqa
+
+
+class UpdateProductReqSchema(Schema):
+    title: str | None = None
+    description: str | None = None
+    price: int | None
+
+    @field_validator('price', mode='before')
+    @classmethod
+    def ensure_list(cls, value: int | None) -> int | None:
+        if isinstance(value, int):
+            if value <= 0:
+                raise ApiValidationError('Invalid price', status_code=400)
+
+        return value
