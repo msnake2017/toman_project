@@ -3,6 +3,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from .loggers import *
+
+
 load_dotenv()
 
 
@@ -63,7 +66,7 @@ DATABASES = {
         'NAME': os.getenv('DB_NAME', 'toman_shop'),
         'USER': os.getenv('DB_USER', 'toman_shop'),
         'PASSWORD': os.getenv('DB_PASSWORD', 'toman_shop'),
-        'HOST': os.getenv('DB_HOST', 'postgres'),
+        'HOST': os.getenv('DB_HOST', 'db'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
@@ -111,7 +114,9 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
 MEDIA_ROOT = BASE_DIR / 'media'
 
-LOCAL_PATHS = (BASE_DIR / 'locale')
+LOCALE_PATHS = [
+    (BASE_DIR / 'locale')
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

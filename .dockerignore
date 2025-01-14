@@ -1,0 +1,8 @@
+.venv/
+.idea/
+media/
+static/
+.env
+.git/
+.gitignore
+toman_shop.postman_collection.json
